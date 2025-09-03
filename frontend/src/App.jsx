@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_URL = "https://notes-app-c7yv.onrender.com/api/v1";
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 
 function App() {
