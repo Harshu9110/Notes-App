@@ -3,20 +3,17 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-
-
 function App() {
   const [notes, setNotes] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [editId, setEditId] = useState(null);
-  const [shareLink, setShareLink] = useState(""); // For copyable link
+  const [shareLink, setShareLink] = useState("");
 
-  // Fetch all notes
   const fetchNotes = async () => {
     try {
       const res = await axios.get(`${API_URL}/notes`);
-      setNotes(res.data);
+      setNotes(res.data.data || res.data); // handle different backend responses
     } catch (err) {
       console.error("Error fetching notes:", err);
     }
@@ -26,7 +23,6 @@ function App() {
     fetchNotes();
   }, []);
 
-  // Add or update note
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title || !content) return;
@@ -46,7 +42,6 @@ function App() {
     }
   };
 
-  // Delete note
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${API_URL}/notes/${id}`);
@@ -56,14 +51,12 @@ function App() {
     }
   };
 
-  // Edit note
   const handleEdit = (note) => {
     setTitle(note.title);
     setContent(note.content);
-    setEditId(note.id);
+    setEditId(note._id || note.id);
   };
 
-  // Share note: create copyable URL
   const handleShare = (shareId) => {
     const url = `${window.location.origin}/shared/${shareId}`;
     setShareLink(url);
@@ -76,7 +69,6 @@ function App() {
     <div style={{ maxWidth: "600px", margin: "0 auto" }}>
       <h1>Notes App</h1>
 
-      {/* Add / Edit Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
         <input
           type="text"
@@ -97,11 +89,10 @@ function App() {
         <button type="submit">{editId ? "Update Note" : "Add Note"}</button>
       </form>
 
-      {/* Notes List */}
       <ul style={{ listStyle: "none", padding: 0 }}>
         {notes.map((note) => (
           <li
-            key={note.id}
+            key={note._id || note.id}
             style={{
               border: "1px solid #ccc",
               padding: "10px",
@@ -110,20 +101,13 @@ function App() {
             }}
           >
             <strong>{note.title}</strong>: {note.content} <br />
-            <button onClick={() => handleEdit(note)} style={{ marginRight: "5px" }}>
-              Edit
-            </button>
-            <button onClick={() => handleDelete(note.id)} style={{ marginRight: "5px" }}>
-              Delete
-            </button>
-            <button onClick={() => handleShare(note.share_id)} style={{ marginRight: "5px" }}>
-              Share
-            </button>
+            <button onClick={() => handleEdit(note)} style={{ marginRight: "5px" }}>Edit</button>
+            <button onClick={() => handleDelete(note._id || note.id)} style={{ marginRight: "5px" }}>Delete</button>
+            <button onClick={() => handleShare(note.share_id)} style={{ marginRight: "5px" }}>Share</button>
           </li>
         ))}
       </ul>
 
-      {/* Show copied share URL */}
       {shareLink && (
         <div style={{ marginTop: "20px" }}>
           <strong>Share this note:</strong>
